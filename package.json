@@ -1,0 +1,9 @@
+{
+"name": "smart-price-finder",
+"version": "1.0.0",
+"description": "BCA Mini Project - Smart Price Finder",
+"main": "server.js",
+"scripts": {
+"start": "node server.js"
+}
+}
