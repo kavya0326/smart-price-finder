@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Price Finder</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f5f9;
+            color: #222;
+        }
+
+        header {
+            background: #1565c0;
+            color: white;
+            text-align: center;
+            padding: 25px 15px;
+        }
+
+        header h1 {
+            margin: 0 0 10px;
+        }
+
+        .notice {
+            background: #fff3cd;
+            color: #664d03;
+            padding: 12px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .search-box {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 25px 15px;
+        }
+
+        input, select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        #search {
+            width: 320px;
+            max-width: 100%;
+        }
+
+        button {
+            padding: 12px 18px;
+            background: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #0d47a1;
+        }
+
+        .clear-button {
+            background: #555;
+        }
+
+        #result-message {
+            text-align: center;
+            font-weight: bold;
+            margin: 20px;
+        }
+
+        #product-container {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(260px, 1fr)
+            );
+            gap: 20px;
+            padding: 20px;
+            max-width: 1300px;
+            margin: auto;
+        }
+
+        .product-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-card h2 {
+            color: #1565c0;
+            font-size: 20px;
+            margin-top: 0;
+        }
+
+        .category {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 5px 9px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .offer {
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        .offer p {
+            margin: 7px 0;
+        }
+
+        .cheapest {
+            border: 2px solid #2e7d32;
+            background: #e8f5e9;
+        }
+
+        .best-price {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .visit-button {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #1565c0;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            color: #b71c1c;
+            grid-column: 1 / -1;
+        }
+
+        footer {
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 25px;
+        }
+
+        @media (max-width: 500px) {
+            #search {
+                width: 100%;
+            }
+
+            #product-container {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🛍️ Smart Price Finder</h1>
+    <p>Compare prices and find the lowest offer!</p>
+</header>
+
+<div class="notice">
+    Mini-project demonstration: All displayed prices are generated
+    sample prices, not live retailer prices.
+</div>
+
+<div class="search-box">
+    <input
+        type="text"
+        id="search"
+        placeholder="Search any product..."
+        aria-label="Search products"
+    >
+
+    <select id="category" aria-label="Choose category">
+        <option value="All">All Categories</option>
+        <option value="Electronics">Electronics & Gadgets</option>
+        <option value="Home">Home & Kitchen</option>
+        <option value="Fashion">Clothing & Fashion</option>
+        <option value="Beauty">Beauty & Personal Care</option>
+        <option value="Education">Education & Stationery</option>
+        <option value="Fitness">Sports & Fitness</option>
+        <option value="Toys">Toys & Entertainment</option>
+        <option value="Travel">Travel & Automotive</option>
+        <option value="Garden">Garden & Outdoor</option>
+        <option value="Other">Other Products</option>
+    </select>
+
+    <button type="button" onclick="searchProduct()">Search</button>
+    <button type="button" class="clear-button" onclick="clearSearch()">
+        Show All
+    </button>
+</div>
+
+<p id="result-message" aria-live="polite"></p>
+
+<main id="product-container"></main>
+
+<footer>
+    <p><strong>Smart Price Finder</strong></p>
+    <p>BCA Mini-Project</p>
+    <p>Compare sample offers across three shopping websites.</p>
+</footer>
+
+<script>
+    // 100 products in 10 different categories.
+    // Prices are generated for demonstration only.
+
+    const categories = [
+        {
+            name: "Electronics & Gadgets",
+            id: "Electronics",
+            base: 1500,
+            products: [
+                "Smartphone",
+                "Laptop",
+                "Tablet",
+                "Wireless Headphones",
+                "Bluetooth Speaker",
+                "Smart Watch",
+                "Digital Camera",
+                "Power Bank",
+                "Wireless Mouse",
+                "Mechanical Keyboard"
+            ]
+        },
+        {
+            name: "Home & Kitchen",
+            id: "Home",
+            base: 800,
+            products: [
+                "Electric Kettle",
+                "Mixer Grinder",
+                "Air Fryer",
+                "Rice Cooker",
+                "Toaster",
+                "Vacuum Cleaner",
+                "Table Fan",
+                "LED Bulb",
+                "Water Purifier",
+                "Induction Cooktop"
+            ]
+        },
+        {
+            name: "Clothing & Fashion",
+            id: "Fashion",
+            base: 500,
+            products: [
+                "Cotton T-Shirt",
+                "Jeans",
+                "Saree",
+                "Kurti",
+                "Hoodie",
+                "Sneakers",
+                "Sandals",
+                "Handbag",
+                "Sunglasses",
+                "Wristwatch"
+            ]
+        },
+        {
+            name: "Beauty & Personal Care",
+            id: "Beauty",
+            base: 300,
+            products: [
+                "Face Wash",
+                "Moisturizer",
+                "Sunscreen",
+                "Shampoo",
+                "Hair Conditioner",
+                "Hair Dryer",
+                "Hair Straightener",
+                "Perfume",
+                "Lipstick",
+                "Makeup Brush Set"
+            ]
+        },
+        {
+            name: "Education & Stationery",
+            id: "Education",
+            base: 200,
+            products: [
+                "Notebook",
+                "Ballpoint Pen Set",
+                "School Backpack",
+                "Scientific Calculator",
+                "Geometry Box",
+                "Drawing Book",
+                "Colour Pencil Set",
+                "Whiteboard",
+                "Office Printer",
+                "Desk Organizer"
+            ]
+        },
+        {
+            name: "Sports & Fitness",
+            id: "Fitness",
+            base: 700,
+            products: [
+                "Cricket Bat",
+                "Football",
+                "Badminton Racket",
+                "Yoga Mat",
+                "Dumbbells",
+                "Skipping Rope",
+                "Basketball",
+                "Bicycle",
+                "Treadmill",
+                "Resistance Bands"
+            ]
+        },
+        {
+            name: "Toys & Entertainment",
+            id: "Toys",
+            base: 400,
+            products: [
+                "Teddy Bear",
+                "Building Blocks",
+                "Remote-Controlled Car",
+                "Jigsaw Puzzle",
+                "Chess Set",
+                "Board Game",
+                "Doll",
+                "Toy Train",
+                "Musical Keyboard",
+                "Art and Craft Kit"
+            ]
+        },
+        {
+            name: "Travel & Automotive",
+            id: "Travel",
+            base: 900,
+            products: [
+                "Travel Suitcase",
+                "Travel Pillow",
+                "Car Phone Holder",
+                "Car Vacuum Cleaner",
+                "Tyre Inflator",
+                "Motorcycle Helmet",
+                "Bicycle Helmet",
+                "Car Dash Camera",
+                "Luggage Backpack",
+                "Reusable Travel Mug"
+            ]
+        },
+        {
+            name: "Garden & Outdoor",
+            id: "Garden",
+            base: 350,
+            products: [
+                "Gardening Tool Set",
+                "Flower Pot",
+                "Watering Can",
+                "Garden Hose",
+                "Solar Garden Light",
+                "Camping Tent",
+                "Sleeping Bag",
+                "Portable Camping Chair",
+                "Bird Feeder",
+                "Outdoor Lantern"
+            ]
+        },
+        {
+            name: "Other Products",
+            id: "Other",
+            base: 300,
+            products: [
+                "Pet Food Bowl",
+                "Cat Scratching Post",
+                "Dog Leash",
+                "Aquarium",
+                "Sewing Machine",
+                "Wall Clock",
+                "Digital Weighing Scale",
+                "Umbrella",
+                "Electric Toothbrush",
+                "First-Aid Kit"
+            ]
+        }
+    ];
+
+    const shoppingData = [];
+    let productNumber = 0;
+
+    // Create 100 product entries with three sample offers each.
+
+    categories.forEach(function(category, categoryIndex) {
+        category.products.forEach(function(productName, itemIndex) {
+            productNumber++;
+
+            // Generate repeatable sample prices.
+            // These are NOT retrieved from the retailers.
+
+            let basePrice = category.base +
+                ((itemIndex * 173 + categoryIndex * 97) % 1200);
+
+            basePrice = Math.round(basePrice / 10) * 10;
+
+            const amazonPrice = basePrice;
+            const flipkartPrice = Math.max(
+                50,
+                basePrice + ((productNumber % 5) - 2) * 50
+            );
+            const meeshoPrice = Math.max(
+                50,
+                basePrice + ((productNumber % 7) - 3) * 40
+            );
+
+            shoppingData.push({
+                name: productName,
+                category: category.name,
+                categoryId: category.id,
+                offers: [
+                    {
+                        store: "Amazon India",
+                        price: amazonPrice,
+                        link: "https://www.amazon.in/"
+                    },
+                    {
+                        store: "Flipkart",
+                        price: flipkartPrice,
+                        link: "https://www.flipkart.com/"
+                    },
+                    {
+                        store: "Meesho",
+                        price: meeshoPrice,
+                        link: "https://www.meesho.com/"
+                    }
+                ]
+            });
+        });
+    });
+
+    // Display products and arrange their offers from cheapest to highest.
+
+    function displayProducts(products) {
+        const container =
+            document.getElementById("product-container");
+
+        const message =
+            document.getElementById("result-message");
+
+        container.innerHTML = "";
+
+        if (products.length === 0) {
+            message.textContent = "No matching products found.";
+
+            container.innerHTML = `
+                <div class="no-results">
+                    No products found. Try another name or category.
+                </div>
+            `;
+
+            return;
+        }
+
+        message.textContent =
+            products.length + " product(s) found.";
+
+        products.forEach(function(product) {
+            const sortedOffers = [...product.offers].sort(
+                function(a, b) {
+                    return a.price - b.price;
+                }
+            );
+
+            const lowestPrice = sortedOffers[0].price;
+
+            let offersHTML = "";
+
+            sortedOffers.forEach(function(offer) {
+                const isCheapest = offer.price === lowestPrice;
+
+                offersHTML += `
+                    <div class="offer ${isCheapest ? "cheapest" : ""}">
+                        <p><strong>${offer.store}</strong></p>
+
+                        <p>
+                            Price: ₹${offer.price.toLocaleString("en-IN")}
+                        </p>
+
+                        ${
+                            isCheapest
+                                ? '<p class="best-price">🏆 Lowest sample price!</p>'
+                                : ''
+                        }
+
+                        <a
+                            class="visit-button"
+                            href="${offer.link}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Visit Website
+                        </a>
+                    </div>
+                `;
+            });
+
+            const card = document.createElement("section");
+            card.className = "product-card";
+
+            card.innerHTML = `
+                <span class="category">${product.category}</span>
+                <h2>${product.name}</h2>
+                <p>Compare sample offers from three retailers.</p>
+                ${offersHTML}
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    // Search by product name and/or category.
+
+    function searchProduct() {
+        const query = document
+            .getElementById("search")
+            .value
+            .trim()
+            .toLowerCase();
+
+        const selectedCategory =
+            document.getElementById("category").value;
+
+        const results = shoppingData.filter(function(product) {
+            const matchesName =
+                product.name.toLowerCase().includes(query);
+
+            const matchesCategory =
+                selectedCategory === "All" ||
+                product.categoryId === selectedCategory;
+
+            return matchesName && matchesCategory;
+        });
+
+        displayProducts(results);
+    }
+
+    // Reset search and category filters.
+
+    function clearSearch() {
+        document.getElementById("search").value = "";
+        document.getElementById("category").value = "All";
+
+        displayProducts(shoppingData);
+    }
+
+    // Allow searching by pressing Enter.
+
+    document.getElementById("search").addEventListener(
+        "keydown",
+        function(event) {
+            if (event.key === "Enter") {
+                searchProduct();
+            }
+        }
+    );
+
+    // Update results when the category changes.
+
+    document.getElementById("category").addEventListener(
+        "change",
+        searchProduct
+    );
+
+    // Show all 100 products when the page first opens.
+
+    displayProducts(shoppingData);
+</script>
+
+</body>
+</html>
